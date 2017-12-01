@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-01 16:43:44 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-01 17:06:02 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -241,16 +241,16 @@ SELECT 	CONVERT(int, ib.iceipbasekey) as IPBaseKey,
 		LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
 		CONVERT(date, ib.dateofdeath) AS IPBDateofDeath,
 -- MDMDNR AS Medlemsnr, MDNAMN AS EfterNamn, MDFNMR AS ForNamn, FDAT, MDAUDT AS AvlidenDatum, MDMDST, MDSTDT AS StatusDatum, MDSOKD, MDSODT AS StatusOrsaksdatum, MDSTAV, MDKNKD, MDSBYT, MDSTOP, 
-		CASE WHEN MDMDNR IS NULL THEN null WHEN FDAT = '0' THEN null ELSE CONVERT(date, SUBSTRING(FDAT, 1, 4) + '-' + SUBSTRING(FDAT, 5, 2) + '-' + SUBSTRING(FDAT, 7, 2)) END AS MdlFodelseDatum, 
-		MDAFDT AS MdlAnslutenFranDatum,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN FDAT = '0' THEN null ELSE CONVERT(date, SUBSTRING(FDAT, 1, 4) + '-' + SUBSTRING(FDAT, 5, 2) + '-' + SUBSTRING(FDAT, 7, 2)) END AS MdlFödelseDatum, 
+		MDAFDT AS MdlAnslutenFrånDatum,
 		MDATDT AS MdlAnslutTillDatum, 
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDAUDT = 0 THEN 'Ej avliden' ELSE 'Avliden' END AS MdlAvliden,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDMDST = 0 THEN '0 - Registrerad' WHEN MDMDST = 1 THEN '1 - Ansluten' WHEN MDMDST = 9 THEN '9 - Inaktiv' ELSE 'Okänd status (' + MDMDST + ')' END AS MdlStatus,
 		CASE WHEN MDMDNR IS NULL THEN null ELSE MDSOKD + ' - ' + SONAMN END AS MdlStatusOrsak,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSTAV = 0 THEN '0 - Ej påbörjat avslut' WHEN MDSTAV = 1 THEN '1 - Påbörjat avslut' WHEN MDSTAV = 2 THEN '2 - Ärende skapat' WHEN MDSTAV = 3 THEN '3 - Slutfört' ELSE 'Okänt värde (' + MDSTAV + ')' END AS MdlStatusAvslut,
-		CASE WHEN MDMDNR IS NULL THEN null WHEN MDKNKD = 0 THEN '0 - Okänd' WHEN MDKNKD = 1 THEN '1 - Kvinna' WHEN MDKNKD = 2 THEN '2 - Man' ELSE 'Okänt värde (' + MDKNKD + ')' END AS MdlKon,  
-		CASE WHEN MDMDNR IS NULL THEN null ELSE MDSPKD END AS MdlSprakKod, 
-		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSBYT = 0 THEN '0 - Nej' WHEN MDSBYT = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSBYT + ')' END AS MdlSallskapsbyteTillstim,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDKNKD = 0 THEN '0 - Okänd' WHEN MDKNKD = 1 THEN '1 - Kvinna' WHEN MDKNKD = 2 THEN '2 - Man' ELSE 'Okänt värde (' + MDKNKD + ')' END AS MdlKön,  
+		CASE WHEN MDMDNR IS NULL THEN null ELSE MDSPKD END AS MdlSpråkKod, 
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSBYT = 0 THEN '0 - Nej' WHEN MDSBYT = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSBYT + ')' END AS MdlSällskapsbyteTillstim,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSTOP = 0 THEN '0 - Nej' WHEN MDSTOP = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSTOP + ')' END AS MdlStoppadUtbetalning,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN ASORT <> '' THEN 'SE' ELSE AULAND END AS MdlLandKod, 
 		CASE WHEN MDMDNR IS NULL THEN null ELSE ASORT END AS MdlSvenskOrt
@@ -262,6 +262,7 @@ FROM (SELECT iceipbasekey,
 INNER JOIN vw_dstipb_all ib ON ib.distributionkey = s.distributionkey AND 
                              ib.iceipbasekey = s.iceipbasekey 
 LEFT OUTER JOIN mdlmdl_subset_rightsholders mdl ON convert(int, ib.LOCALSOCIETYAFFNBR)  = mdl.mdmdnr
+
 
 -- Skapa CCI
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dIPBaseName] ON [datamarts].[dIPBaseName] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
