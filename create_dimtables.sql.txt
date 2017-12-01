@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-11-16 14:58:48 ******/
+/******* Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-11-16 14:58:48 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
