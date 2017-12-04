@@ -236,7 +236,7 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dReportRow] ON [datamarts].[dReportRow] 
 
 -----------------------
 -- dIPBaseName
-SELECT 	CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
+SELECT  CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
 		LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
 		LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
 		CONVERT(date, ib.dateofdeath) AS IPBDateofDeath,
@@ -253,7 +253,9 @@ SELECT 	CONVERT(int, ib.iceipbasekey) as IPBaseKey,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSBYT = 0 THEN '0 - Nej' WHEN MDSBYT = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSBYT + ')' END AS MdlSällskapsbyteTillstim,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSTOP = 0 THEN '0 - Nej' WHEN MDSTOP = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSTOP + ')' END AS MdlStoppadUtbetalning,
 		CASE WHEN MDMDNR IS NULL THEN null WHEN ASORT <> '' THEN 'SE' ELSE AULAND END AS MdlLandKod, 
-		CASE WHEN MDMDNR IS NULL THEN null ELSE ASORT END AS MdlSvenskOrt
+		CASE WHEN MDMDNR IS NULL THEN null ELSE ASORT END AS MdlSvenskOrt,
+		CASE WHEN MDMDNR IS NULL THEN null ELSE ASPONR END AS MdlPostNr,
+		CASE WHEN MDMDNR IS NULL THEN null ELSE PNKOMU END AS MdlKommun
 INTO datamarts.dIPBaseName
 FROM (SELECT iceipbasekey, 
              MAX(distributionkey) AS distributionkey 
