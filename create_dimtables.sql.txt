@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-12 11:37:53 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-12 17:01:46 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -63,7 +63,7 @@ DROP TABLE datamarts.dResStatus
 SELECT CONVERT(int, s.distributionkey) AS DistKey,
        description AS DistDesc, 
        description + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescAndKey, 
-       description + ' -- ' + CONVERT(varchar, CONVERT(date, s.distributiondate)) + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
+       description + ' -- ' + COALESCE(CONVERT(varchar, CONVERT(date, s.distributiondate)), '<Saknar datum>') + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
        CONVERT(date, distributiondate) AS DistDate,
 	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, -1) AS DistEventKey,
 	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventDesc ELSE de.DistEventDesc END, 'Ej kopplade avräkningar') AS DistEventDesc,
