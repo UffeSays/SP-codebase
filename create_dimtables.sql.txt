@@ -237,8 +237,8 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dReportRow] ON [datamarts].[dReportRow] 
 -----------------------
 -- dIPBaseName
 SELECT  CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
-		LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
-		LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
+		LTRIM(LTRIM(COALESCE(ib.ipbfirstname, '')) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
+		LTRIM(LTRIM(COALESCE(ib.ipbfirstname,'')) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
 		CONVERT(date, ib.dateofdeath) AS IPBDateofDeath,
 -- MDMDNR AS Medlemsnr, MDNAMN AS EfterNamn, MDFNMR AS ForNamn, FDAT, MDAUDT AS AvlidenDatum, MDMDST, MDSTDT AS StatusDatum, MDSOKD, MDSODT AS StatusOrsaksdatum, MDSTAV, MDKNKD, MDSBYT, MDSTOP, 
 		CASE WHEN MDMDNR IS NULL THEN null WHEN FDAT = '0' THEN null ELSE CONVERT(date, SUBSTRING(FDAT, 1, 4) + '-' + SUBSTRING(FDAT, 5, 2) + '-' + SUBSTRING(FDAT, 7, 2)) END AS MdlFödelseDatum, 
@@ -265,16 +265,15 @@ INNER JOIN vw_dstipb_all ib ON ib.distributionkey = s.distributionkey AND
                              ib.iceipbasekey = s.iceipbasekey 
 LEFT OUTER JOIN mdlmdl_subset_rightsholders mdl ON convert(int, ib.LOCALSOCIETYAFFNBR)  = mdl.mdmdnr
 
-
 -- Skapa CCI
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dIPBaseName] ON [datamarts].[dIPBaseName] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
 
 -----------------------
 -- dIPInfoName
 SELECT CONVERT(int, ii.iceipnamekey) AS IPNameKey, 
-       LTRIM(LTRIM(ii.ipifirstname) + ' ' + LTRIM(ii.ipiname)) AS IPInfoName, 
-       LTRIM(LTRIM(ii.ipifirstname) + ' ' + LTRIM(ii.ipiname)) + ' (' + CAST(ii.iceipnamekey as varchar) + ')' AS IPInfoNameAndKey, 
-       ii.iceipbasekey AS IPBaseKey, LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey
+       LTRIM(LTRIM(COALESCE(ii.ipifirstname,'')) + ' ' + LTRIM(ii.ipiname)) AS IPInfoName, 
+       LTRIM(LTRIM(COALESCE(ii.ipifirstname,'')) + ' ' + LTRIM(ii.ipiname)) + ' (' + CAST(ii.iceipnamekey as varchar) + ')' AS IPInfoNameAndKey, 
+       ii.iceipbasekey AS IPBaseKey, LTRIM(LTRIM(COALESCE(ib.ipbfirstname,'')) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey
 INTO datamarts.dIPInfoName
 FROM (SELECT iceipnamekey, 
              MAX(distributionkey) AS distributionkey 
