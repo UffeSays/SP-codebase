@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-01 17:06:02 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-12 11:37:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -65,9 +65,9 @@ SELECT CONVERT(int, s.distributionkey) AS DistKey,
        description + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescAndKey, 
        description + ' -- ' + CONVERT(varchar, CONVERT(date, s.distributiondate)) + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
        CONVERT(date, distributiondate) AS DistDate,
-	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, 'Ej kopplade avräkningar') AS DistEventKey,
+	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, -1) AS DistEventKey,
 	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventDesc ELSE de.DistEventDesc END, 'Ej kopplade avräkningar') AS DistEventDesc,
-	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, 'Ej kopplade avräkningar') AS DistEventOrderDate
+	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, '2200-01-01') AS DistEventOrderDate
 INTO datamarts.dDistribution
 FROM (
 	SELECT distributionkey, description, distributiondate FROM vw_dstidn_all
