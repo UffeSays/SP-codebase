@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fNCB_facts]    Script Date: 2017-12-01 16:28:52 ******/
+/****** Object:  StoredProcedure [dbo].[create_fNCB_facts]    Script Date: 2017-12-12 16:53:30 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -41,7 +41,7 @@ SELECT
 	CONVERT(int, mnvknr) AS IceWorkKey,
 	mnbelp AS NcbAmountDistributed
 INTO datamarts.fNCB_all
-FROM dinminpf_2017 dm
+FROM dinminpf dm
 LEFT JOIN datamarts.dIPInfoName ipi ON dm.mnipnr = ipi.IPNameKey
 WHERE dm.mnatnr IN (SELECT anatnr FROM dinatnpf WHERE anjbss = '+' AND anjbst IN ('11', '08'))
 
