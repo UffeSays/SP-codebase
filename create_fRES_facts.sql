@@ -11,13 +11,13 @@ GO
 ALTER PROC [dbo].[create_fRES_facts] @pmYear nvarchar(4)
 AS
 
--- Laddning av fRES_<årtal> - Fakta för reserveringar
--- Anropa med parameter för vilket år som ska laddas
+-- Laddning av fRES_<Ã¥rtal> - Fakta fÃ¶r reserveringar
+-- Anropa med parameter fÃ¶r vilket Ã¥r som ska laddas
 --
--- Kräver att stored procedures "create_fAPS_tmptables" och "create_fAPS_temptables_indexes" 
--- har körts för att hjälptabellerna "for_dm_*" ska ha genererats
+-- KrÃ¤ver att stored procedures "create_fAPS_tmptables" och "create_fAPS_temptables_indexes" 
+-- har kÃ¶rts fÃ¶r att hjÃ¤lptabellerna "for_dm_*" ska ha genererats
 --
--- Typiskt för att ladda ett år körs:
+-- Typiskt fÃ¶r att ladda ett Ã¥r kÃ¶rs:
 -- * create_dimtables
 -- * create_fAPS_tmptables
 -- * create_fAPS_temptables_indexes
@@ -32,7 +32,7 @@ SET @sql = N'
 IF OBJECT_ID(''datamarts.fRES_' + @pmYear + ''', ''U'') IS NOT NULL
 DROP table datamarts.fRES_' + @pmYear + '
 
--- Själva fRES tabellen
+-- SjÃ¤lva fRES tabellen
 SELECT 
 	CONVERT(int, res.distributionkey) AS DistKey,
 	dcg.distributionareacode AS DistAreaCodeKey,
@@ -61,7 +61,7 @@ INNER JOIN tmp.for_dm_commission_by_processkey_' + @pmYear + ' cbp ON res.proces
 INNER JOIN tmp.for_dm_dstdcg_' + @pmYear + ' dcg ON res.processkey = dcg.processkey
 INNER JOIN tmp.for_dm_report_processkey_' + @pmYear + ' rpk ON res.processkey = rpk.processkey
 INNER JOIN tmp.for_dm_dstrrw_' + @pmYear + ' rrw ON rpk.reportprocesskey = rrw.processkey AND res.reportkey = rrw.reportkey AND res.reportrowkey = rrw.reportrowkey
-WHERE approvedfordistribution IN (1,2,5,6,7,8,9) -- Bara det som är severity RES
+WHERE approvedfordistribution IN (1,2,5,6,7,8,9) -- Bara det som Ã¤r severity RES
 
 CREATE CLUSTERED COLUMNSTORE INDEX CCI_fRES ON datamarts.fRES_' + @pmYear + '
 CREATE NONCLUSTERED INDEX [NCI-DateOfUse] ON datamarts.fRES_' + @pmYear + ' (DateOfUse ASC)
