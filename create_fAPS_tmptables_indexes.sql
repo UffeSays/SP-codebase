@@ -13,12 +13,12 @@ ALTER PROC [dbo].[create_fAPS_tmptables_indexes] @pmYear nvarchar(4)
 					 
 AS
 
--- Skapar index på hjälptabellerna "for_dm_*" för vidare laddning av fAPS_<årtal> och fRES_<årtal>
--- Anropa med parameter för vilket år som ska laddas
+-- Skapar index pÃ¥ hjÃ¤lptabellerna "for_dm_*" fÃ¶r vidare laddning av fAPS_<Ã¥rtal> och fRES_<Ã¥rtal>
+-- Anropa med parameter fÃ¶r vilket Ã¥r som ska laddas
 -- 
--- Kräver att create_fAPS_tmptables har körts
+-- KrÃ¤ver att create_fAPS_tmptables har kÃ¶rts
 --
--- Typiskt för att ladda ett år körs:
+-- Typiskt fÃ¶r att ladda ett Ã¥r kÃ¶rs:
 -- * create_dimtables
 -- * create_fAPS_tmptables
 -- * create_fAPS_temptables_indexes
