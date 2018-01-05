@@ -13,8 +13,8 @@ AS
 IF OBJECT_ID('datamarts.dDistribution', 'U') IS NOT NULL
 DROP TABLE datamarts.dDistribution
 
-IF OBJECT_ID('datamarts.dAvr‰kningsomrÂde', 'U') IS NOT NULL
-DROP TABLE datamarts.dAvr‰kningsomrÂde
+IF OBJECT_ID('datamarts.dAvr√§kningsomr√•de', 'U') IS NOT NULL
+DROP TABLE datamarts.dAvr√§kningsomr√•de
 
 IF OBJECT_ID('datamarts.dDistCodeGroup', 'U') IS NOT NULL
 DROP TABLE datamarts.dDistCodeGroup
@@ -66,7 +66,7 @@ SELECT CONVERT(int, s.distributionkey) AS DistKey,
        description + ' -- ' + CONVERT(varchar, CONVERT(date, s.distributiondate)) + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
        CONVERT(date, distributiondate) AS DistDate,
 	   COALESCE(de.DistEventKey, 0) AS DistEventKey,
-	   COALESCE(de.DistEventDesc, 'Ej kopplade avr‰kningar') AS DistEventDesc,
+	   COALESCE(de.DistEventDesc, 'Ej kopplade avr√§kningar') AS DistEventDesc,
 	   DistEventOrderDate
 INTO datamarts.dDistribution
 FROM (SELECT distributionkey, description, distributiondate FROM vw_dstidn_all) s
@@ -78,13 +78,13 @@ CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dDistribution]
 
  
 -----------------------
--- dAvr‰kningsomrÂde
-SELECT ao.aoaoid AS DistAreaCodeKey, ao.aotext AS DistAreaDesc, COALESCE(aog.DistAreaGroupDesc, '÷vriga') AS DistAreaGroupDesc 
-INTO datamarts.dAvr‰kningsomrÂde
+-- dAvr√§kningsomr√•de
+SELECT ao.aoaoid AS DistAreaCodeKey, ao.aotext AS DistAreaDesc, COALESCE(aog.DistAreaGroupDesc, '√ñvriga') AS DistAreaGroupDesc 
+INTO datamarts.dAvr√§kningsomr√•de
 FROM gemavopf ao
 LEFT OUTER JOIN udd_distareagroup aog ON ao.aoaoid = aog.DistAreaCodeKey
 
-CREATE CLUSTERED INDEX [CI-DistAreaCodeKey] ON [datamarts].[dAvr‰kningsomrÂde]
+CREATE CLUSTERED INDEX [CI-DistAreaCodeKey] ON [datamarts].[dAvr√§kningsomr√•de]
 ([DistAreaCodeKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
 -----------------------
@@ -133,10 +133,10 @@ CREATE CLUSTERED INDEX [CI-ProcesKey] ON [datamarts].[dProcess]
 -----------------------
 -- dSociety
 SELECT f.societycode AS SocietyCode, 
-       COALESCE(scakny, f.societycode + ' - Ok‰nt s‰llskap') AS SocietyName, 
+       COALESCE(scakny, f.societycode + ' - Ok√§nt s√§llskap') AS SocietyName, 
        COALESCE(scland, '--') AS SocietyCountryCode, 
-       COALESCE(lnnamn, f.societycode + ' - Ok‰nt s‰llskap') AS SocietyCountryNameSwe, 
-       COALESCE(lnname, f.societycode + ' - Ok‰nt s‰llskap') AS SocietyCountryNameEng
+       COALESCE(lnnamn, f.societycode + ' - Ok√§nt s√§llskap') AS SocietyCountryNameSwe, 
+       COALESCE(lnname, f.societycode + ' - Ok√§nt s√§llskap') AS SocietyCountryNameEng
 INTO datamarts.dSociety
 FROM
 (SELECT distinct societycode FROM 
@@ -155,8 +155,8 @@ CREATE CLUSTERED INDEX [CI-SocietyCode] ON [datamarts].[dSociety]
 -----------------------
 -- dCountry
 SELECT COALESCE(lnland, '') AS CountryCode, 
-       COALESCE(lnnamn, 'Ok‰nt land') AS CountryNameSwe, 
-       COALESCE(lnname, 'Ok‰nt land') AS CountryNameEng
+       COALESCE(lnnamn, 'Ok√§nt land') AS CountryNameSwe, 
+       COALESCE(lnname, 'Ok√§nt land') AS CountryNameEng
 INTO datamarts.dCountry
 FROM 
 (SELECT DISTINCT countryofuse FROM vw_dstrrw_all) d
@@ -168,7 +168,7 @@ CREATE CLUSTERED INDEX [CI-CountryCode] ON [datamarts].[dCountry]
 
 -----------------------
 -- dWork
--- Tar namnet frÂn den fˆrekomsten med den senaste DistKey:n
+-- Tar namnet fr√•n den f√∂rekomsten med den senaste DistKey:n
 SELECT CONVERT(int, w.IceWorkKey) AS IceWorkKey, 
        w.WorkTitle, 
        w.WorkTitle + ' (' + CAST(w.IceWorkKey as varchar) + ')' AS WorkTitleKeyLatest, 
@@ -198,8 +198,8 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dWork] ON [datamarts].[dWork] WITH (DROP
 
 -----------------------
 -- dReportRow
--- Tar namn och duration frÂn raden med den hˆgsta processkeyn (senaste)
--- H‰mtar rapportsystem (SelectType) frÂn DSTRRW fˆr att inte blanda prodkeys frÂn olika system
+-- Tar namn och duration fr√•n raden med den h√∂gsta processkeyn (senaste)
+-- H√§mtar rapportsystem (SelectType) fr√•n DSTRRW f√∂r att inte blanda prodkeys fr√•n olika system
 SELECT s.ProductionKey, 
        MAX(p.productionname) AS ProductionName, 
        MAX(p.productionname + ' (' + s.ProductionKey + ')') AS ProductionNameAndKey,
@@ -215,7 +215,7 @@ INNER JOIN vw_dstrpw_all p ON p.processkey = s.processkey AND p.localprodkey = s
 WHERE p.distributionkey in (SELECT distributionkey FROM udd_distribution_to_distributionevent)
 GROUP BY s.productionkey
 
--- Fˆr att matcha alla aps-rader sÂ l‰gg till rader med de k‰llor (SelectionType) som har rader med LocalProdKey = 0
+-- F√∂r att matcha alla aps-rader s√• l√§gg till rader med de k√§llor (SelectionType) som har rader med LocalProdKey = 0
 INSERT INTO datamarts.dReportRow
 SELECT  selectiontype + '-0' AS ProductionKey,
         'Ingen produktion' AS ProductionName, 
