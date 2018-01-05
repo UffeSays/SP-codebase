@@ -12,10 +12,10 @@ ALTER PROC [dbo].[create_fAPS_tmptables] @pmYear nvarchar(4)
 					 
 AS
 
--- Skapar hjälptabellerna "for_dm_*" för vidare laddning av fAPS_<årtal> och fRES_<årtal>
--- Anropa med parameter för vilket år som ska laddas
+-- Skapar hjÃ¤lptabellerna "for_dm_*" fÃ¶r vidare laddning av fAPS_<Ã¥rtal> och fRES_<Ã¥rtal>
+-- Anropa med parameter fÃ¶r vilket Ã¥r som ska laddas
 --
--- Typiskt för att ladda ett år körs:
+-- Typiskt fÃ¶r att ladda ett Ã¥r kÃ¶rs:
 -- * create_dimtables
 -- * create_fAPS_tmptables
 -- * create_fAPS_temptables_indexes
@@ -48,7 +48,7 @@ IF OBJECT_ID(''tmp.for_dm_dstrmw_' + @pmYear + ''', ''U'') IS NOT NULL
 DROP table tmp.for_dm_dstrmw_' + @pmYear + '
 
 
--- Hämtar faktor för att multiplicera fram kommission
+-- HÃ¤mtar faktor fÃ¶r att multiplicera fram kommission
 SELECT processkey, 
        MAX(CAST(COMMISSIONPERCENT as decimal(22,10)) / (100.0 - commissionpercent)) as comfact, 
        MAX(commtype) AS commtype, MAX(commissionpercent) as commissionpercent  
@@ -57,7 +57,7 @@ FROM dstdam_' + @pmYear + '
 GROUP BY processkey
 
 
--- Hämtar avdrag per processkey och typeofuse
+-- HÃ¤mtar avdrag per processkey och typeofuse
 SELECT dbt.processkey, 
        dbt.typeofright, 
        dedamstip, 
@@ -82,7 +82,7 @@ INNER JOIN (
 WHERE dedamsum <> 0 
 
 
--- Skapa temptabell för att översätta processkey till reportprocesskeys
+-- Skapa temptabell fÃ¶r att Ã¶versÃ¤tta processkey till reportprocesskeys
 SELECT dcg.processkey, 
        CASE WHEN dan.selectedprocesskey is null THEN dcg.processkey ELSE dan.selectedprocesskey END AS ReportProcessKey
 INTO tmp.for_dm_report_processkey_' + @pmYear + ' 
@@ -90,14 +90,14 @@ FROM dstdcg_' + @pmYear + ' dcg
 LEFT OUTER JOIN dstdan_' + @pmYear + ' dan ON dcg.processkey = dan.selectionkey
 
 
--- Skapa tabell med processkeys och distarea för de processkeys som gått igenom (D7 och +)
+-- Skapa tabell med processkeys och distarea fÃ¶r de processkeys som gÃ¥tt igenom (D7 och +)
 SELECT processkey, distributionareacode
 INTO tmp.for_dm_dstdcg_' + @pmYear + '
 FROM dstdcg_' + @pmYear + '
 WHERE distributionphase = ' + '''D7''' + ' AND distributionstatus = ' + '''+''' + '
 
 
--- Hämta ut aktuella rader från alla års dstrrw (pga analogier) för laddning till aktuell dm_aps 
+-- HÃ¤mta ut aktuella rader frÃ¥n alla Ã¥rs dstrrw (pga analogier) fÃ¶r laddning till aktuell dm_aps 
 -- Beror av att for_dm_report_processkey laddats
 SELECT processkey, reportkey, reportrowkey, countryofuse, dateofuse 
 INTO tmp.for_dm_dstrrw_' + @pmYear + '
@@ -105,7 +105,7 @@ FROM vw_dstrrw_all
 WHERE processkey in (SELECT DISTINCT ReportProcessKey FROM tmp.for_dm_report_processkey_' + @pmYear + ' )
 
 
--- Hämta ut aktuella rader från alla års dstrmw (pga analogier) för laddning till aktuell dm_aps 
+-- HÃ¤mta ut aktuella rader frÃ¥n alla Ã¥rs dstrmw (pga analogier) fÃ¶r laddning till aktuell dm_aps 
 -- Beror av att for_dm_report_processkey laddats
 SELECT processkey, reportkey, reportrowkey, workkey, duration
 INTO tmp.for_dm_dstrmw_' + @pmYear + '
