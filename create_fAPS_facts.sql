@@ -13,13 +13,13 @@ GO
 ALTER PROC [dbo].[create_fAPS_facts] @pmYear nvarchar(4)
 AS
 
--- Laddning av fAPS_<årtal> - Fakta för avräkningar
--- Anropa med parameter för vilket år som ska laddas
+-- Laddning av fAPS_<Ã¥rtal> - Fakta fÃ¶r avrÃ¤kningar
+-- Anropa med parameter fÃ¶r vilket Ã¥r som ska laddas
 --
--- Kräver att stored procedures "create_fAPS_tmptables" och "create_fAPS_temptables_indexes" 
--- har körts för att hjälptabellerna "for_dm_*" ska ha genererats
+-- KrÃ¤ver att stored procedures "create_fAPS_tmptables" och "create_fAPS_temptables_indexes" 
+-- har kÃ¶rts fÃ¶r att hjÃ¤lptabellerna "for_dm_*" ska ha genererats
 --
--- Typiskt för att ladda ett år körs:
+-- Typiskt fÃ¶r att ladda ett Ã¥r kÃ¶rs:
 -- * create_dimtables
 -- * create_fAPS_tmptables
 -- * create_fAPS_tmptables_indexes
@@ -36,7 +36,7 @@ IF OBJECT_ID(''datamarts.fAPS_' + @pmYear + ''', ''U'') IS NOT NULL
 DROP table datamarts.fAPS_' + @pmYear + '
 
 
--- Själva fAPS tabellen
+-- SjÃ¤lva fAPS tabellen
 SELECT	
 	CONVERT(int, aps.distributionkey) AS DistKey,
 	dcg.distributionareacode AS DistAreaCodeKey,
