@@ -10,19 +10,22 @@ GO
 ALTER PROC [dbo].[create_dgradering]
 AS
 
-IF OBJECT_ID('datamarts.dgradering', 'U') IS NOT NULL
-DROP TABLE datamarts.dgradering
+IF OBJECT_ID('datamarts.dGradering', 'U') IS NOT NULL
+DROP TABLE datamarts.dGradering
 
 
 -----------------------
 -- dDistribution
-SELECT CONVERT(int, distributionkey) AS DistKey,
-       ICEWORKKEY,
-       LOCALATTRIBUTEVALUE, 
-       GraderingVidAvrakning,
-       LOCALATTRIBUTETYPE
-INTO datamarts.dgradering
-FROM dbo.dstwla
+SELECT CONVERT(int, a.distributionkey) AS DistKey,
+       a.ICEWORKKEY,
+       a.LOCALATTRIBUTEVALUE, 
+       a.GraderingVidAvrakning,
+       a.LOCALATTRIBUTETYPE
+INTO datamarts.dGradering
+FROM dbo.dstwla  a
+LEFT OUTER JOIN dbo.dstwla b ON
+	   a.ICEWORKKEY = b.ICEWORKKEY and a.distributionkey < b.distributionkey
+WHERE b.distributionkey IS NULL;	
 	
 
 CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dgradering]
