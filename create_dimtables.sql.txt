@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-12-12 17:01:46 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-10 15:32:54 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -182,7 +182,10 @@ SELECT CONVERT(int, w.IceWorkKey) AS IceWorkKey,
        Left(w.WorkDuration ,2) * 3600 + substring(w.WorkDuration , 4,2) * 60 + substring(w.WorkDuration , 7,2) AS WorkDurationSec, 
        w.IceWorkKeyOrig AS OriginalWorkIceWorkKey, 
        wt.WorkTitleOriginal AS OriginalWorkTitle, 
-       wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest
+       wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest,
+	   GraderingSenaste, 
+	   GraderingAntalOlika, 
+	   GraderingListaUnika
 INTO datamarts.dWork
 FROM
 (
@@ -200,6 +203,10 @@ LEFT OUTER JOIN (
 	SELECT distributionkey, iceworkkey, MAX(worktitleoriginal) AS worktitleoriginal FROM vw_dstwot_all GROUP BY distributionkey, iceworkkey
 ) wt
 ON s.DistKey = wt.DistributionKey AND w.IceWorkKeyOrig = wt.IceWorkKey 
+LEFT OUTER JOIN (
+	SELECT iceworkkey, GraderingSenaste, GraderingAntalOlika, GraderingListaUnika from tmp.for_dm_dstwla
+) wl
+ON s.IceWorkKey = wl.IceWorkKey
 
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dWork] ON [datamarts].[dWork] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
 
