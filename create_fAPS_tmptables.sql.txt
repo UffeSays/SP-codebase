@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-10 15:15:11 ******/
+/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-10 16:11:34 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -124,7 +124,7 @@ DROP TABLE tmp.for_dm_dstwla
 SELECT
 	w.DISTRIBUTIONKEY, 
 	w.ICEWORKKEY, --LOCALATTRIBUTEVALUE, 
-	CASE WHEN LOCALATTRIBUTEVALUE IN ('b', 'c', 'd', 'e') THEN LOCALATTRIBUTEVALUE ELSE 'a' END AS GraderingSenaste, 
+	CASE WHEN LOCALATTRIBUTEVALUE COLLATE SQL_Latin1_General_CP1_CS_AS IN ('b', 'c', 'd', 'e') THEN LOCALATTRIBUTEVALUE ELSE 'a' END AS GraderingSenaste, 
 	agr.nrg AS GraderingAntalOlika,
 	(
 		select distinct localattributevalue + ';' 
@@ -142,4 +142,5 @@ INNER JOIN
 ) agr
 ON w.DISTRIBUTIONKEY = agr.maxdk AND w.ICEWORKKEY = agr.ICEWORKKEY
 WHERE w.LOCALATTRIBUTETYPE = 2
+
 
