@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2017-11-16 15:00:29 ******/
+/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-10 15:15:11 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -20,7 +20,8 @@ AS
 -- * create_fAPS_tmptables
 -- * create_fAPS_temptables_indexes
 -- * create_fAPS_facts
--- * createfRES_facts
+-- * create_fRES_facts
+-- * create:fNCB_facts
 
 
 SET NOCOUNT ON
@@ -114,3 +115,31 @@ WHERE processkey in (SELECT DISTINCT ReportProcessKey FROM tmp.for_dm_report_pro
 '
 
 EXECUTE sp_executesql @sql
+
+
+-- Ytterligare tmp-tabell för gradering men som inte behöver årtal
+IF OBJECT_ID('tmp.for_dm_dstwla', 'U') IS NOT NULL
+DROP TABLE tmp.for_dm_dstwla
+
+SELECT
+	w.DISTRIBUTIONKEY, 
+	w.ICEWORKKEY, --LOCALATTRIBUTEVALUE, 
+	CASE WHEN LOCALATTRIBUTEVALUE IN ('b', 'c', 'd', 'e') THEN LOCALATTRIBUTEVALUE ELSE 'a' END AS GraderingSenaste, 
+	agr.nrg AS GraderingAntalOlika,
+	(
+		select distinct localattributevalue + ';' 
+		from dstwla gl
+		where gl.iceworkkey = w.ICEWORKKEY
+		for xml path('')
+	) GraderingListaUnika
+into tmp.for_dm_dstwla
+FROM dstwla w 
+INNER JOIN
+(
+	select iceworkkey, max(distributionkey) as maxdk, count(distinct LOCALATTRIBUTEVALUE) as nrg
+	from dstwla
+	group by ICEWORKKEY
+) agr
+ON w.DISTRIBUTIONKEY = agr.maxdk AND w.ICEWORKKEY = agr.ICEWORKKEY
+WHERE w.LOCALATTRIBUTETYPE = 2
+
