@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-11 09:35:31 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-11 09:44:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -183,9 +183,9 @@ SELECT CONVERT(int, w.IceWorkKey) AS IceWorkKey,
        w.IceWorkKeyOrig AS OriginalWorkIceWorkKey, 
        wt.WorkTitleOriginal AS OriginalWorkTitle, 
        wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest,
-	   COALESCE(GraderingSenaste, 'a') AS GraderingSenaste, 
-	   COALESCE(GraderingAntalOlika, 1) AS GraderingAntalOlika, 
-	   COALESCE(GraderingListaUnika, '') AS GraderingListaUnika
+	   COALESCE(GraderingSenasteSomAvräkning, 'a') AS GraderingSenasteSomAvräkning, 
+	   COALESCE(GraderingAntalUnikaSomRegistrerat, 1) AS GraderingAntalUnikaSomRegistrerat, 
+	   COALESCE(GraderingarListaUnikaSomRegistrerat, '') AS GraderingarListaUnikaSomRegistrerat
 INTO datamarts.dWork
 FROM
 (
@@ -204,7 +204,7 @@ LEFT OUTER JOIN (
 ) wt
 ON s.DistKey = wt.DistributionKey AND w.IceWorkKeyOrig = wt.IceWorkKey 
 LEFT OUTER JOIN (
-	SELECT iceworkkey, GraderingSenaste, GraderingAntalOlika, GraderingListaUnika from tmp.for_dm_dstwla
+	SELECT iceworkkey, GraderingSenasteSomAvräkning, GraderingAntalUnikaSomRegistrerat, GraderingarListaUnikaSomRegistrerat from tmp.for_dm_dstwla
 ) wl
 ON s.IceWorkKey = wl.IceWorkKey
 

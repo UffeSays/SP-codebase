@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-10 16:11:34 ******/
+/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-11 09:52:19 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -119,19 +119,23 @@ EXECUTE sp_executesql @sql
 
 -- Ytterligare tmp-tabell för gradering men som inte behöver årtal
 IF OBJECT_ID('tmp.for_dm_dstwla', 'U') IS NOT NULL
-DROP TABLE tmp.for_dm_dstwla
+DROP TABLE tmp.for_dm_dstwla 
 
 SELECT
 	w.DISTRIBUTIONKEY, 
-	w.ICEWORKKEY, --LOCALATTRIBUTEVALUE, 
-	CASE WHEN LOCALATTRIBUTEVALUE COLLATE SQL_Latin1_General_CP1_CS_AS IN ('b', 'c', 'd', 'e') THEN LOCALATTRIBUTEVALUE ELSE 'a' END AS GraderingSenaste, 
-	agr.nrg AS GraderingAntalOlika,
+	w.ICEWORKKEY, 
+	-- Alla graderingar utom b-e tolkas som a i TROY-beräkningen (det kan finnas null, -, P och annat i fältet)
+	-- Fram till och med minst distkey 1198 så har dessutom graderingar b-e skrivna med versaler tolkats som 'a' i TROY-avräkningen eftersom jämförelsen varit case sensitive
+	-- När Gustav ordnar så att beräkningen inte är case sensitive så behöver vi få koll på från vilken distkey och hantera det nedan så att vi får ut rätt gradering
+	-- i fältet GraderingSenasteSomAvräkning, dvs den gradering som poängberäkningen utgick från
+	CASE WHEN LOCALATTRIBUTEVALUE COLLATE SQL_Latin1_General_CP1_CS_AS IN ('b', 'c', 'd', 'e') THEN LOCALATTRIBUTEVALUE ELSE 'a' END AS GraderingSenasteSomAvräkning, 
+	agr.nrg AS GraderingAntalUnikaSomRegistrerat,
 	(
 		select distinct localattributevalue + ';' 
 		from dstwla gl
 		where gl.iceworkkey = w.ICEWORKKEY
 		for xml path('')
-	) GraderingListaUnika
+	) GraderingarListaUnikaSomRegistrerat
 into tmp.for_dm_dstwla
 FROM dstwla w 
 INNER JOIN
@@ -142,5 +146,4 @@ INNER JOIN
 ) agr
 ON w.DISTRIBUTIONKEY = agr.maxdk AND w.ICEWORKKEY = agr.ICEWORKKEY
 WHERE w.LOCALATTRIBUTETYPE = 2
-
 
