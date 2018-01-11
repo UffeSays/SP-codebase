@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-10 15:32:54 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-11 09:35:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -183,9 +183,9 @@ SELECT CONVERT(int, w.IceWorkKey) AS IceWorkKey,
        w.IceWorkKeyOrig AS OriginalWorkIceWorkKey, 
        wt.WorkTitleOriginal AS OriginalWorkTitle, 
        wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest,
-	   GraderingSenaste, 
-	   GraderingAntalOlika, 
-	   GraderingListaUnika
+	   COALESCE(GraderingSenaste, 'a') AS GraderingSenaste, 
+	   COALESCE(GraderingAntalOlika, 1) AS GraderingAntalOlika, 
+	   COALESCE(GraderingListaUnika, '') AS GraderingListaUnika
 INTO datamarts.dWork
 FROM
 (
