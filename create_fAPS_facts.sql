@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_facts]    Script Date: 2017-11-16 14:59:39 ******/
+/****** Object:  StoredProcedure [dbo].[create_fAPS_facts]    Script Date: 2018-01-12 15:43:54 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -67,7 +67,7 @@ SELECT
 	cbp.comfact * (aps.amount + aps.deductamount)  + (aps.amount + aps.deductamount) AS AmountToDistribute, 
 	cbp.comfact * (aps.amount + aps.deductamount) AS CommissionAmount, 
 	cbp.commissionpercent AS CommissionPercent,
-	aps.amount + aps.deductamount AS AmountAfterComission, 
+	aps.amount + aps.deductamount AS AmountAfterCommission, 
 	aps.deductamount AS DeductAmountTot, 
 	COALESCE(aps.deductamount * dbpt.dedamstipshare, 0) AS DeductAmountStip, 
 	COALESCE(aps.deductamount * dbpt.dedammemshare, 0) AS DeductAmountMem, 

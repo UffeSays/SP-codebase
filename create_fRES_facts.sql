@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fRES_facts]    Script Date: 2017-11-16 15:01:59 ******/
+/****** Object:  StoredProcedure [dbo].[create_fRES_facts]    Script Date: 2018-01-12 15:49:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -61,7 +61,7 @@ INNER JOIN tmp.for_dm_commission_by_processkey_' + @pmYear + ' cbp ON res.proces
 INNER JOIN tmp.for_dm_dstdcg_' + @pmYear + ' dcg ON res.processkey = dcg.processkey
 INNER JOIN tmp.for_dm_report_processkey_' + @pmYear + ' rpk ON res.processkey = rpk.processkey
 INNER JOIN tmp.for_dm_dstrrw_' + @pmYear + ' rrw ON rpk.reportprocesskey = rrw.processkey AND res.reportkey = rrw.reportkey AND res.reportrowkey = rrw.reportrowkey
-WHERE approvedfordistribution IN (1,2,5,6,7,8,9) -- Bara det som är severity RES
+WHERE approvedfordistribution IN (0,1,2,5,6,7,8,9) -- Bara det som är severity RES
 
 CREATE CLUSTERED COLUMNSTORE INDEX CCI_fRES ON datamarts.fRES_' + @pmYear + '
 CREATE NONCLUSTERED INDEX [NCI-DateOfUse] ON datamarts.fRES_' + @pmYear + ' (DateOfUse ASC)

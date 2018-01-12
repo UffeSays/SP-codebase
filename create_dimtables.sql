@@ -1,6 +1,6 @@
-USE [datalake]
+﻿USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2017-11-16 14:58:48 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-12 15:18:48 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -60,18 +60,24 @@ DROP TABLE datamarts.dResStatus
 
 -----------------------
 -- dDistribution
-SELECT CONVERT(int, s.distributionkey) AS DistKey, 
+SELECT CONVERT(int, s.distributionkey) AS DistKey,
        description AS DistDesc, 
        description + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescAndKey, 
-       description + ' -- ' + CONVERT(varchar, CONVERT(date, s.distributiondate)) + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
+       description + ' -- ' + COALESCE(CONVERT(varchar, CONVERT(date, s.distributiondate)), '<Saknar datum>') + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
        CONVERT(date, distributiondate) AS DistDate,
-	   COALESCE(de.DistEventKey, 0) AS DistEventKey,
-	   COALESCE(de.DistEventDesc, 'Ej kopplade avräkningar') AS DistEventDesc,
-	   DistEventOrderDate
+	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, -1) AS DistEventKey,
+	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventDesc ELSE de.DistEventDesc END, 'Ej kopplade avräkningar') AS DistEventDesc,
+	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, '2200-01-01') AS DistEventOrderDate
 INTO datamarts.dDistribution
-FROM (SELECT distributionkey, description, distributiondate FROM vw_dstidn_all) s
+FROM (
+	SELECT distributionkey, description, distributiondate FROM vw_dstidn_all
+	UNION ALL
+	SELECT 1000000 + anatnr AS distributionkey, 'NCB - ' + anatxt AS description, chgdte AS distributiondate FROM dinatnpf WHERE anjbss = '+' AND anjbst IN ('11', '08')
+) s
 LEFT JOIN udd_distribution_to_distributionevent dd ON s.distributionkey = dd.distributionkey
+LEFT JOIN udd_distributionNcb_to_distributionevent ndd ON (s.distributionkey % 100000 ) = ndd.distatnr
 LEFT JOIN udd_distributionevents de ON dd.DistEventKey = de.DistEventKey
+LEFT JOIN udd_distributionevents nde ON ndd.DistEventKey = nde.DistEventKey
 
 CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dDistribution]
 ([DistKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
@@ -79,7 +85,7 @@ CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dDistribution]
  
 -----------------------
 -- dAvräkningsområde
-SELECT ao.aoaoid AS DistAreaCodeKey, ao.aotext AS DistAreaDesc, COALESCE(aog.DistAreaGroupDesc, 'Övriga') AS DistAreaGroupDesc 
+SELECT ao.aoaoid AS DistAreaCodeKey, ao.aotext AS DistAreaDesc, ao.aotext + ' (' + ao.aoaoid + ')' AS DistAreaDescAndKey, COALESCE(aog.DistAreaGroupDesc, 'Övriga') AS DistAreaGroupDesc
 INTO datamarts.dAvräkningsområde
 FROM gemavopf ao
 LEFT OUTER JOIN udd_distareagroup aog ON ao.aoaoid = aog.DistAreaCodeKey
@@ -90,7 +96,8 @@ CREATE CLUSTERED INDEX [CI-DistAreaCodeKey] ON [datamarts].[dAvräkningsområde]
 -----------------------
 -- dDistCodeGroup-- Bara en DCG-rad. Finns flera pga processkey och de kan ha olika beskrivning
 SELECT CONVERT(int, distributioncodegroup) AS DistCodeGroupKey, 
-       MAX(distributioncodegroupdescriptionswe) AS DistCodeGroupDesc 
+       MAX(distributioncodegroupdescriptionswe) AS DistCodeGroupDesc, 
+       MAX(distributioncodegroupdescriptionswe + ' (' + CONVERT(varchar, distributioncodegroup) + ')' ) AS DistCodeGroupDescAndKey
 INTO datamarts.dDistCodeGroup
 FROM vw_dstdcg_all
 GROUP BY distributioncodegroup 
@@ -100,7 +107,7 @@ CREATE CLUSTERED INDEX [CI-DistCodeGroupKey] ON [datamarts].[dDistCodeGroup]
 
 -----------------------
 -- dDistributionCode
-SELECT distributioncode as DistCodeKey, MAX(pdcdescriptionswe) AS DistCodeDesc
+SELECT distributioncode as DistCodeKey, MAX(pdcdescriptionswe) AS DistCodeDesc, MAX(pdcdescriptionswe + ' (' + distributioncode + ')') AS DistCodeDescAndKey
 INTO datamarts.dDistributionCode
 FROM dstpdc_2017
 GROUP BY distributioncode 
@@ -175,7 +182,10 @@ SELECT CONVERT(int, w.IceWorkKey) AS IceWorkKey,
        Left(w.WorkDuration ,2) * 3600 + substring(w.WorkDuration , 4,2) * 60 + substring(w.WorkDuration , 7,2) AS WorkDurationSec, 
        w.IceWorkKeyOrig AS OriginalWorkIceWorkKey, 
        wt.WorkTitleOriginal AS OriginalWorkTitle, 
-       wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest
+       wt.WorkTitleOriginal + ' (' + CAST(w.IceWorkKeyOrig as varchar) + ')' AS OriginalWorkTitleAndKeyLatest,
+	   COALESCE(GraderingSenasteSomAvräkning, 'a') AS GraderingSenasteSomAvräkning, 
+	   COALESCE(GraderingAntalUnikaSomRegistrerat, 1) AS GraderingAntalUnikaSomRegistrerat, 
+	   COALESCE(GraderingarListaUnikaSomRegistrerat, '') AS GraderingarListaUnikaSomRegistrerat
 INTO datamarts.dWork
 FROM
 (
@@ -193,6 +203,10 @@ LEFT OUTER JOIN (
 	SELECT distributionkey, iceworkkey, MAX(worktitleoriginal) AS worktitleoriginal FROM vw_dstwot_all GROUP BY distributionkey, iceworkkey
 ) wt
 ON s.DistKey = wt.DistributionKey AND w.IceWorkKeyOrig = wt.IceWorkKey 
+LEFT OUTER JOIN (
+	SELECT iceworkkey, GraderingSenasteSomAvräkning, GraderingAntalUnikaSomRegistrerat, GraderingarListaUnikaSomRegistrerat from tmp.for_dm_dstwla
+) wl
+ON s.IceWorkKey = wl.IceWorkKey
 
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dWork] ON [datamarts].[dWork] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
 
@@ -229,10 +243,26 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dReportRow] ON [datamarts].[dReportRow] 
 
 -----------------------
 -- dIPBaseName
-SELECT CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
-       LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
-       LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
-       CONVERT(date, ib.dateofdeath) AS IPBDateofDeath
+SELECT  CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
+		LTRIM(LTRIM(COALESCE(ib.ipbfirstname, '')) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
+		LTRIM(LTRIM(COALESCE(ib.ipbfirstname,'')) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
+		CONVERT(date, ib.dateofdeath) AS IPBDateofDeath,
+-- MDMDNR AS Medlemsnr, MDNAMN AS EfterNamn, MDFNMR AS ForNamn, FDAT, MDAUDT AS AvlidenDatum, MDMDST, MDSTDT AS StatusDatum, MDSOKD, MDSODT AS StatusOrsaksdatum, MDSTAV, MDKNKD, MDSBYT, MDSTOP, 
+		CASE WHEN MDMDNR IS NULL THEN null WHEN FDAT = '0' THEN null ELSE CONVERT(date, SUBSTRING(FDAT, 1, 4) + '-' + SUBSTRING(FDAT, 5, 2) + '-' + SUBSTRING(FDAT, 7, 2)) END AS MdlFödelseDatum, 
+		MDAFDT AS MdlAnslutenFrånDatum,
+		MDATDT AS MdlAnslutTillDatum, 
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDAUDT = 0 THEN 'Ej avliden' ELSE 'Avliden' END AS MdlAvliden,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDMDST = 0 THEN '0 - Registrerad' WHEN MDMDST = 1 THEN '1 - Ansluten' WHEN MDMDST = 9 THEN '9 - Inaktiv' ELSE 'Okänd status (' + MDMDST + ')' END AS MdlStatus,
+		CASE WHEN MDMDNR IS NULL THEN null ELSE MDSOKD + ' - ' + SONAMN END AS MdlStatusOrsak,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSTAV = 0 THEN '0 - Ej påbörjat avslut' WHEN MDSTAV = 1 THEN '1 - Påbörjat avslut' WHEN MDSTAV = 2 THEN '2 - Ärende skapat' WHEN MDSTAV = 3 THEN '3 - Slutfört' ELSE 'Okänt värde (' + MDSTAV + ')' END AS MdlStatusAvslut,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDKNKD = 0 THEN '0 - Okänd' WHEN MDKNKD = 1 THEN '1 - Kvinna' WHEN MDKNKD = 2 THEN '2 - Man' ELSE 'Okänt värde (' + MDKNKD + ')' END AS MdlKön,  
+		CASE WHEN MDMDNR IS NULL THEN null ELSE MDSPKD END AS MdlSpråkKod, 
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSBYT = 0 THEN '0 - Nej' WHEN MDSBYT = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSBYT + ')' END AS MdlSällskapsbyteTillstim,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN MDSTOP = 0 THEN '0 - Nej' WHEN MDSTOP = 1 THEN '1 - Ja' ELSE 'Okänt värde (' + MDSTOP + ')' END AS MdlStoppadUtbetalning,
+		CASE WHEN MDMDNR IS NULL THEN null WHEN ASORT <> '' THEN 'SE' ELSE AULAND END AS MdlLandKod, 
+		CASE WHEN MDMDNR IS NULL THEN null ELSE ASORT END AS MdlSvenskOrt,
+		CASE WHEN MDMDNR IS NULL THEN null ELSE ASPONR END AS MdlPostNr,
+		CASE WHEN MDMDNR IS NULL THEN null ELSE PNKOMU END AS MdlKommun
 INTO datamarts.dIPBaseName
 FROM (SELECT iceipbasekey, 
              MAX(distributionkey) AS distributionkey 
@@ -240,6 +270,7 @@ FROM (SELECT iceipbasekey,
       GROUP BY iceipbasekey) s
 INNER JOIN vw_dstipb_all ib ON ib.distributionkey = s.distributionkey AND 
                              ib.iceipbasekey = s.iceipbasekey 
+LEFT OUTER JOIN mdlmdl_subset_rightsholders mdl ON convert(int, ib.LOCALSOCIETYAFFNBR)  = mdl.mdmdnr
 
 -- Skapa CCI
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dIPBaseName] ON [datamarts].[dIPBaseName] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
@@ -247,9 +278,9 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dIPBaseName] ON [datamarts].[dIPBaseName
 -----------------------
 -- dIPInfoName
 SELECT CONVERT(int, ii.iceipnamekey) AS IPNameKey, 
-       LTRIM(LTRIM(ii.ipifirstname) + ' ' + LTRIM(ii.ipiname)) AS IPInfoName, 
-       LTRIM(LTRIM(ii.ipifirstname) + ' ' + LTRIM(ii.ipiname)) + ' (' + CAST(ii.iceipnamekey as varchar) + ')' AS IPInfoNameAndKey, 
-       ii.iceipbasekey AS IPBaseKey, LTRIM(LTRIM(ib.ipbfirstname) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey
+       LTRIM(LTRIM(COALESCE(ii.ipifirstname,'')) + ' ' + LTRIM(ii.ipiname)) AS IPInfoName, 
+       LTRIM(LTRIM(COALESCE(ii.ipifirstname,'')) + ' ' + LTRIM(ii.ipiname)) + ' (' + CAST(ii.iceipnamekey as varchar) + ')' AS IPInfoNameAndKey, 
+       ii.iceipbasekey AS IPBaseKey, LTRIM(LTRIM(COALESCE(ib.ipbfirstname,'')) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey
 INTO datamarts.dIPInfoName
 FROM (SELECT iceipnamekey, 
              MAX(distributionkey) AS distributionkey 
@@ -295,11 +326,12 @@ CREATE CLUSTERED INDEX [CI-TypeOfRight] ON [datamarts].[dTypeOfRight]
 -----------------------
 -- dCommissiontype
 SELECT CONVERT(smallint, deductiontype) AS CommissionTypeKey, 
-       description AS CommissionType
+       description AS CommissionType,
+       description + ' (' + CONVERT(varchar, deductiontype) + ')' AS CommissionTypeAndKey
 INTO datamarts.dCommissiontype
 FROM dstpdt
 WHERE deductiontypecode = 'C'
-UNION (SELECT 0, 'Inget kommissionsavdrag')
+UNION (SELECT 0, 'Inget kommissionsavdrag', 'Inget kommissionsavdrag')
 
 CREATE CLUSTERED INDEX [CI-CommissionTypeKey] ON [datamarts].[dCommissiontype]
 ([CommissionTypeKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
@@ -307,7 +339,8 @@ CREATE CLUSTERED INDEX [CI-CommissionTypeKey] ON [datamarts].[dCommissiontype]
 -----------------------
 -- dResApprovedForDistribution
 SELECT CONVERT(smallint, ascid) AS ApprovedForDistributionKey, 
-       description AS AppForDistDescription 
+       description AS AppForDistDescription,
+       description + ' (' + CONVERT(varchar, ascid) + ')' AS AppForDistDescriptionAndKey
 INTO datamarts.dResApprovedForDistribution
 FROM dstasc
 WHERE ascid IN (1,2,5,6,7,8,9)
@@ -318,7 +351,8 @@ CREATE CLUSTERED INDEX [CI-ApprovedForDistributionKey] ON [datamarts].[dResAppro
 -----------------------
 -- dResStatus
 SELECT CONVERT(smallint, resstatus) AS ResStatusKey, 
-       resstatusdescriptionswe AS ResStatusDescription
+       resstatusdescriptionswe AS ResStatusDescription,
+       resstatusdescriptionswe  + ' (' + CONVERT(varchar, resstatus) + ')' AS ResStatusDescriptionAndKey
 INTO datamarts.dResStatus
 FROM udd_resstatus
 

@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fNCB_facts]    Script Date: 2017-12-12 16:53:30 ******/
+/****** Object:  StoredProcedure [dbo].[create_fNCB_facts]    Script Date: 2018-01-12 15:47:19 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
