@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables_indexes]    Script Date: 2018-01-12 15:48:12 ******/
+/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables_indexes]    Script Date: 2018-01-19 12:56:17 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -47,6 +47,11 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_
 -- Index for for_dm_dstwla
 CREATE UNIQUE CLUSTERED INDEX [CI-IceWorkKey] ON [tmp].[for_dm_dstwla] ([ICEWORKKEY] ASC)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+-- Index for for_dm_medley_for_dIpBase
+CREATE UNIQUE CLUSTERED INDEX [CI-MdlMedlemsNr] ON [tmp].[for_dm_medley_for_dIpBase] ([MdlMedlemsnr] ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
 
 '
 
