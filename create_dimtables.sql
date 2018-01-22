@@ -1,6 +1,6 @@
 ﻿USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-19 14:42:08 ******/
+/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-22 12:36:45 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -247,7 +247,7 @@ CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dReportRow] ON [datamarts].[dReportRow] 
 SELECT  CONVERT(int, ib.iceipbasekey) as IPBaseKey, 
 		LTRIM(LTRIM(COALESCE(ib.ipbfirstname, '')) + ' ' + LTRIM(ib.ipbname)) AS IPBaseName, 
 		LTRIM(LTRIM(COALESCE(ib.ipbfirstname,'')) + ' ' + LTRIM(ib.ipbname)) + ' (' + CAST(ib.iceipbasekey as varchar) + ')' AS IPBaseNameAndKey, 
-		CONVERT(date, ib.dateofdeath) AS IPBDateofDeath,
+		CASE WHEN CONVERT(date, ib.dateofdeath) = '1899-12-30' THEN null else CONVERT(date, ib.dateofdeath) END AS IPBDateOfDeath,
 		MdlMedlemsnr,
 		MdlMedlemstyp,
 		MdlNamn,
