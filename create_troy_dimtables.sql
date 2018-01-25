@@ -164,7 +164,7 @@ FROM
 	 SELECT distinct usagereportsocietycode FROM vw_dstaps_all AS societycode) t
 ) f
 LEFT OUTER JOIN
-( SELECT scslsk, scakny, scland, lnnamn, lnname FROM gemsocpf_2017 sc 
+( SELECT scslsk, scakny, scland, lnnamn, lnname FROM gemsocpf sc 
   INNER JOIN gemlndpf ln ON sc.scland = ln.lnland
 ) s ON s.SCSLSK = f.societycode
 
