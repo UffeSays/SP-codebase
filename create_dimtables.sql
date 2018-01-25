@@ -109,7 +109,7 @@ CREATE CLUSTERED INDEX [CI-DistCodeGroupKey] ON [datamarts].[dDistCodeGroup]
 -- dDistributionCode
 SELECT distributioncode as DistCodeKey, MAX(pdcdescriptionswe) AS DistCodeDesc, MAX(pdcdescriptionswe + ' (' + distributioncode + ')') AS DistCodeDescAndKey
 INTO datamarts.dDistributionCode
-FROM dstpdc_2017
+FROM dstpdc
 GROUP BY distributioncode 
 
 CREATE CLUSTERED INDEX [CI-DistCodeKey] ON [datamarts].[dDistributionCode]
