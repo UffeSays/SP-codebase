@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fNCB_facts]    Script Date: 2018-01-12 15:47:19 ******/
+/****** Object:  StoredProcedure [dbo].[create_troy_fNCB]    Script Date: 2018-01-25 13:03:16 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9,7 +9,7 @@ GO
 
 
 
-ALTER PROC [dbo].[create_fNCB_facts] 
+ALTER PROC [dbo].[create_troy_fNCB] 
 AS
 
 -- Laddning av fNCB_all för alla årtal - Fakta för NCB-avräkning
@@ -19,12 +19,12 @@ AS
 -- har körts för att hjälptabellerna "for_dm_*" ska ha genererats
 --
 -- Typiskt för att ladda ett år körs:
--- * create_dimtables
--- * create_fAPS_tmptables
--- * create_fAPS_temptables_indexes
--- * create_fAPS_facts
--- * create_fRES_facts
--- * create_fNCB_facts
+-- * create_troy_tmptables
+-- * create_troy_dimtables
+-- * create_troy_fAPS
+-- * create_troy_fRES
+-- * create_tory_fNCB
+-- * create_medley_rightsholders
 
 
 SET NOCOUNT ON

@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_facts]    Script Date: 2018-01-12 15:43:54 ******/
+/****** Object:  StoredProcedure [dbo].[create_troy_fAPS]    Script Date: 2018-01-25 13:01:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10,7 +10,7 @@ GO
 
 
 
-ALTER PROC [dbo].[create_fAPS_facts] @pmYear nvarchar(4)
+ALTER PROC [dbo].[create_troy_fAPS] @pmYear nvarchar(4)
 AS
 
 -- Laddning av fAPS_<årtal> - Fakta för avräkningar
@@ -20,11 +20,12 @@ AS
 -- har körts för att hjälptabellerna "for_dm_*" ska ha genererats
 --
 -- Typiskt för att ladda ett år körs:
--- * create_dimtables
--- * create_fAPS_tmptables
--- * create_fAPS_tmptables_indexes
--- * create_fAPS_facts
--- * createfRES_facts
+-- * create_troy_tmptables
+-- * create_troy_dimtables
+-- * create_troy_fAPS
+-- * create_troy_fRES
+-- * create_tory_fNCB
+-- * create_medley_rightsholders
 
 
 

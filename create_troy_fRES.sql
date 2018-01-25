@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fRES_facts]    Script Date: 2018-01-12 15:49:03 ******/
+/****** Object:  StoredProcedure [dbo].[create_troy_fRES]    Script Date: 2018-01-25 13:04:38 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8,7 +8,7 @@ GO
 
 
 
-ALTER PROC [dbo].[create_fRES_facts] @pmYear nvarchar(4)
+ALTER PROC [dbo].[create_troy_fRES] @pmYear nvarchar(4)
 AS
 
 -- Laddning av fRES_<årtal> - Fakta för reserveringar
@@ -18,11 +18,12 @@ AS
 -- har körts för att hjälptabellerna "for_dm_*" ska ha genererats
 --
 -- Typiskt för att ladda ett år körs:
--- * create_dimtables
--- * create_fAPS_tmptables
--- * create_fAPS_temptables_indexes
--- * create_fAPS_facts
--- * create_fRES_facts
+-- * create_troy_tmptables
+-- * create_troy_dimtables
+-- * create_troy_fAPS
+-- * create_troy_fRES
+-- * create_tory_fNCB
+-- * create_medley_rightsholders
 
 
 SET NOCOUNT ON

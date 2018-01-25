@@ -1,14 +1,26 @@
 ﻿USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_dimtables]    Script Date: 2018-01-22 12:36:45 ******/
+/****** Object:  StoredProcedure [dbo].[create_troy_dimtables]    Script Date: 2018-01-25 12:52:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 
-ALTER PROC [dbo].[create_dimtables]
+ALTER PROC [dbo].[create_troy_dimtables]
 AS
+
+-- Skapar alla dimensionstabeller för avräkningsanalys från TROY
+--
+-- Typiskt för att ladda ett år körs:
+-- * create_troy_tmptables
+-- * create_troy_dimtables
+-- * create_troy_fAPS
+-- * create_troy_fRES
+-- * create_tory_fNCB
+-- * create_medley_rightsholders
+
+
 
 IF OBJECT_ID('datamarts.dDistribution', 'U') IS NOT NULL
 DROP TABLE datamarts.dDistribution

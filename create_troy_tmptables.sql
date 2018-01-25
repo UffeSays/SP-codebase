@@ -1,6 +1,6 @@
 USE [datalake]
 GO
-/****** Object:  StoredProcedure [dbo].[create_fAPS_tmptables]    Script Date: 2018-01-19 12:43:12 ******/
+/****** Object:  StoredProcedure [dbo].[create_troy_tmptables]    Script Date: 2018-01-25 12:54:15 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8,7 +8,7 @@ GO
 
 
 
-ALTER PROC [dbo].[create_fAPS_tmptables] @pmYear nvarchar(4)
+ALTER PROC [dbo].[create_troy_tmptables] @pmYear nvarchar(4)
 					 
 AS
 
@@ -16,16 +16,19 @@ AS
 -- Anropa med parameter för vilket år som ska laddas
 --
 -- Typiskt för att ladda ett år körs:
--- * create_dimtables
--- * create_fAPS_tmptables
--- * create_fAPS_temptables_indexes
--- * create_fAPS_facts
--- * create_fRES_facts
--- * create:fNCB_facts
+-- * create_troy_tmptables
+-- * create_troy_dimtables
+-- * create_troy_fAPS
+-- * create_troy_fRES
+-- * create_tory_fNCB
+-- * create_medley_rightsholders
 
 
 SET NOCOUNT ON
 DECLARE @sql nvarchar(max)
+
+--------------------
+-- Skapa upp dynamisk SQL för att skapa tmp-tabeller för ett visst år
 
 SET @sql = N'
 
@@ -150,7 +153,7 @@ WHERE w.LOCALATTRIBUTETYPE = 2
 
 -----------------------------------------------
 
--- Tmp-tabell för behandlat Medleydata för upphovspersoner och förlag (berikar dIPBase i martladdning) 
+-- Tmp-tabell för behandlat Medleydata för upphovspersoner och förlag (berikar dIPBase i martladdning). Behöver ej årtal
 	
 IF OBJECT_ID('tmp.for_dm_medley_for_dIpBase', 'U') IS NOT NULL
 DROP TABLE tmp.for_dm_medley_for_dIpBase;
@@ -202,7 +205,36 @@ SELECT
 INTO tmp.for_dm_medley_for_dIpBase
 FROM mdl
 
+---------------------
+-- Skapa index för alla tmp-tabellerna
 
+SET @sql = N'
+
+-- Index for for_dm_dstdcg
+CREATE NONCLUSTERED INDEX [NCI-ProcessKey] ON tmp.for_dm_dstdcg_' + @pmYear + ' (processkey ASC)
+INCLUDE (distributionareacode) 
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+
+-- Index for for_dm_dstrrw
+CREATE CLUSTERED INDEX [CI-ProcessKeyReportKey] ON tmp.for_dm_dstrrw_' + @pmYear + ' (processkey ASC, reportkey ASC, reportrowkey ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+-- Index for for_dm_dstrmw
+CREATE CLUSTERED INDEX [CI-ProcessKeyReportKeyWorkkey] ON tmp.for_dm_dstrmw_' + @pmYear + ' (processkey ASC, reportkey ASC, reportrowkey ASC, workkey ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+-- Index for for_dm_dstwla
+CREATE UNIQUE CLUSTERED INDEX [CI-IceWorkKey] ON [tmp].[for_dm_dstwla] ([ICEWORKKEY] ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+-- Index for for_dm_medley_for_dIpBase
+CREATE UNIQUE CLUSTERED INDEX [CI-MdlMedlemsNr] ON [tmp].[for_dm_medley_for_dIpBase] ([MdlMedlemsnr] ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+'
+
+EXECUTE sp_executesql @sql
 
 
 
