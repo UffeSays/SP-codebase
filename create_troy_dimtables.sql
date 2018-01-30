@@ -292,7 +292,7 @@ FROM (SELECT iceipbasekey,
       GROUP BY iceipbasekey) s
 INNER JOIN vw_dstipb_all ib ON ib.distributionkey = s.distributionkey AND 
                              ib.iceipbasekey = s.iceipbasekey 
-LEFT OUTER JOIN tmp.for_dm_medley_for_dIpBase mdl ON convert(int, ib.LOCALSOCIETYAFFNBR)  = mdl.MdlMedlemsnr
+LEFT OUTER JOIN tmp.for_dm_medley_for_dIpBase mdl ON convert(int, ib.LOCALSOCIETYAFFNBR) = mdl.MdlMedlemsnr
 
 -- Skapa CCI
 CREATE CLUSTERED COLUMNSTORE INDEX [CCI-dIPBaseName] ON [datamarts].[dIPBaseName] WITH (DROP_EXISTING = OFF, COMPRESSION_DELAY = 0) ON [PRIMARY]
