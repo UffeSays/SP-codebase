@@ -10,67 +10,67 @@ GO
 ALTER PROC [dbo].[create_matchbox]
 AS
 
-IF OBJECT_ID('datamarts.fMBhdr', 'U') IS NOT NULL DROP TABLE datamarts.fMBhdr
-IF OBJECT_ID('datamarts.dMBart', 'U') IS NOT NULL DROP TABLE datamarts.dMBart
-IF OBJECT_ID('datamarts.dMBipi', 'U') IS NOT NULL DROP TABLE datamarts.dMBipi
-IF OBJECT_ID('datamarts.dMBipw', 'U') IS NOT NULL DROP TABLE datamarts.dMBipw
-IF OBJECT_ID('datamarts.dMBtit', 'U') IS NOT NULL DROP TABLE datamarts.dMBtit
-IF OBJECT_ID('datamarts.dMBref', 'U') IS NOT NULL DROP TABLE datamarts.dMBref
+IF OBJECT_ID('datamarts.fMatchBoxHeader', 'U') IS NOT NULL DROP TABLE datamarts.fMatchBoxHeader
+IF OBJECT_ID('datamarts.dMatchBoxArtist', 'U') IS NOT NULL DROP TABLE datamarts.dMatchBoxArtist
+IF OBJECT_ID('datamarts.dMatchBoxIPInfo', 'U') IS NOT NULL DROP TABLE datamarts.dMatchBoxIPInfo
+IF OBJECT_ID('datamarts.dMatchBoxIPBase', 'U') IS NOT NULL DROP TABLE datamarts.dMatchBoxIPBase
+IF OBJECT_ID('datamarts.dMatchBoxTitle', 'U') IS NOT NULL DROP TABLE datamarts.dMatchBoxTitle
+IF OBJECT_ID('datamarts.dMatchBoxReference', 'U') IS NOT NULL DROP TABLE datamarts.dMatchBoxReference
 
 
 -----------------------
 -- fMBhdr
 SELECT *
-INTO datamarts.fMBhdr
+INTO datamarts.fMatchBoxHeader
 FROM dbo.mbhdr  a
 
 -----------------------
 -- dMBart
 SELECT *
-INTO datamarts.dMBart
+INTO datamarts.dMatchBoxArtist
 FROM dbo.mbart  a
 	
 
 -----------------------
 -- dMBipi
 SELECT *
-INTO datamarts.dMBipi
+INTO datamarts.dMatchBoxIPInfo
 FROM dbo.mbipi  a
 
 -----------------------
 -- dMBipw
 SELECT *
-INTO datamarts.dMBipw
+INTO datamarts.dMatchBoxIPBase
 FROM dbo.mbipw  a
 
 -----------------------
 -- dMBtit
 SELECT *
-INTO datamarts.dMBtit
+INTO datamarts.dMatchBoxTitle
 FROM dbo.mbtit  a
 
 -----------------------
 -- dMBref
 SELECT *
-INTO datamarts.dMBref
+INTO datamarts.dMatchBoxReference
 FROM dbo.mbref  a
 
-CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fMBhdr]
+CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fMatchBoxHeader]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMBart]
+CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMatchBoxArtist]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-ipnamekey] ON [datamarts].[dMBipi]
+CREATE CLUSTERED INDEX [CI-ipnamekey] ON [datamarts].[dMatchBoxIPInfo]
 ([ipnamekey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMBipw]
+CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMatchBoxIPBase]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMBtit]
+CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMatchBoxTitle]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMBref]
+CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dMatchBoxReference]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
 GO
