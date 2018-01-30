@@ -173,7 +173,7 @@ SELECT
 		CASE MDMDTY WHEN '01' THEN 'Upphovsperson' WHEN '02' THEN 'Förlag' WHEN '03' THEN 'Fysisk person' WHEN '04' THEN 'Juridisk person'  WHEN '07' THEN 'Direktlicensgivare'
 	END AS MdlMedlemstyp,
 	CASE 
-		WHEN MDMDTY IN ('01', '03') THEN MDNAMN + ', ' + MDFNMR 
+		WHEN MDMDTY IN ('01', '03') THEN MDNAMN + COALESCE(', ' + MDFNMN, '')
 		WHEN MDMDTY IN ('02', '04', '07') THEN MDNAMN + CASE WHEN MDFNMN <> MDNAMN THEN COALESCE(', ' + MDFNMN, '') ELSE '' END
 	END AS MdlNamn,
 	CASE 
