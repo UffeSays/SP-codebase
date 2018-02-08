@@ -16,23 +16,20 @@ IF OBJECT_ID('datamarts.dNorddisDistribitionCode', 'U') IS NOT NULL DROP TABLE d
 
 
 -----------------------
--- fMBhdr
+-- fNorddisAPS
 SELECT *
 INTO datamarts.fNorddisAPS
 FROM dbo.dinmippf
 
 -----------------------
--- dMBart
-SELECT *
-INTO datamarts.dNorddisDistribition
-FROM dbo.fdisvb 
-	
-
------------------------
--- dMBipi
-SELECT *
-INTO datamarts.dNorddisDistribitionCode
-FROM dbo.fdisvg
+-- dNorddisDistribution
+SELECT DISTRIBUTIONKEY AS DistKey,
+       DISTRIBUTIONCODEGROUPDESCRIPTIONSWE AS DistDesc, 
+       DISTRIBUTIONCODEGROUPDESCRIPTIONSWE + ' (' + CONVERT(varchar, DISTRIBUTIONKEY) + ')' AS DistDescAndKey, 
+       DISTRIBUTIONCODEGROUPDESCRIPTIONSWE + ' -- ' + COALESCE(CONVERT(varchar, (CONVERT(date, CONVERT(varchar, DISTRIBUTIONDATE)))), '<Saknar datum>') + ' (' + CONVERT(varchar, DISTRIBUTIONKEY) + ')' AS DistDescWithDateAndKey, 
+       CONVERT(date, CONVERT(varchar, DISTRIBUTIONDATE)) AS DistDate
+INTO datamarts.dNorddisDistribution
+FROM dbo.fdisvb
 
 
 CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fNorddisAPS]
@@ -41,7 +38,5 @@ CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fNorddisAPS]
 CREATE CLUSTERED INDEX [CI-workKey] ON [datamarts].[dNorddisDistribition]
 ([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
-CREATE CLUSTERED INDEX [CI-ipnamekey] ON [datamarts].[dNorddisDistribitionCode]
-([ipnamekey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
 GO
