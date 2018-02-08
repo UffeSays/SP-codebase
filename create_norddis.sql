@@ -19,20 +19,20 @@ IF OBJECT_ID('datamarts.dNorddisDistribitionCode', 'U') IS NOT NULL DROP TABLE d
 -- fMBhdr
 SELECT *
 INTO datamarts.fNorddisAPS
-FROM dbo.dinmippf  a
+FROM dbo.dinmippf
 
 -----------------------
 -- dMBart
 SELECT *
 INTO datamarts.dNorddisDistribition
-FROM dbo.dbo.fdisvb   a
+FROM dbo.fdisvb 
 	
 
 -----------------------
 -- dMBipi
 SELECT *
 INTO datamarts.dNorddisDistribitionCode
-FROM dbo.dbo.fdisvg  a
+FROM dbo.fdisvg
 
 
 CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fNorddisAPS]
