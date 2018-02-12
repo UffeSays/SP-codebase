@@ -17,33 +17,33 @@ IF OBJECT_ID('datamarts.dNorddisProcess', 'U') IS NOT NULL DROP TABLE datamarts.
 
 -----------------------
 -- fNorddisAPS
-SELECT 	distributionkey AS DistKey,
-    	distributionareacode AS DistAreaCodeKey,
+SELECT 	mip.distributionkey AS DistKey,
+    	mip.distributionareacode AS DistAreaCodeKey,
     	null AS DistCodeGroupKey,
-    	distributioncode AS DistCodeKey,
-    	processkey AS ProcessKey,
-    	reportkey AS ReportKey, 
-    	reportrowkey AS ReportRowKey,
-    	iceworkkey AS IceWorkKey,
-    	iceipbasekey AS IceIPBaseKey,
-    	iceipnamekey AS IceIPNameKey,
+    	mip.distributioncode AS DistCodeKey,
+    	mip.processkey AS ProcessKey,
+    	mip.reportkey AS ReportKey, 
+    	mip.reportrowkey AS ReportRowKey,
+    	ref.workkey AS IceWorkKey,
+    	mip.iceipbasekey AS IceIPBaseKey,
+    	mip.iceipnamekey AS IceIPNameKey,
     	null AS CommissionTypeKey,
-    	societycode AS SocietyCode,
-    	usagereportsocietycode AS UsageReportSocietyCode,
+    	mip.societycode AS SocietyCode,
+    	mip.usagereportsocietycode AS UsageReportSocietyCode,
     	null AS HelpSocietyCode,
     	null AS ProductionKey,
     	null AS CountryOfUseCode,
-    	caecode AS CAECode,
+    	mip.caecode AS CAECode,
     	null AS TypeOfRight,
-    	null AS WorkKey,
-    	usagekey AS UsageKey,
+    	mip.workkey AS WorkKey,
+    	mip.usagekey AS UsageKey,
     	null AS CAR,
     	null AS DateOfUse,
     	null AS CurrencyCode, 
-    	numberofuses AS NumberOfUsesByWork,
-    	workduration AS DurationSecByWork,
-    	shareprc AS SharePrc,
-    	mandateid AS MandateID,
+    	mip.numberofuses AS NumberOfUsesByWork,
+    	mip.workduration AS DurationSecByWork,
+    	mip.shareprc AS SharePrc,
+    	mip.mandateid AS MandateID,
     	null AS AmountToDistribute, 
     	null AS CommissionAmount, 
     	null AS CommissionPercent,
@@ -52,9 +52,15 @@ SELECT 	distributionkey AS DistKey,
     	null AS DeductAmountStip, 
     	null AS DeductAmountMem, 
     	null AS DeductAmountOther,
-    	amount AS AmountDistributed
+    	mip.amount AS AmountDistributed
 INTO datamarts.fNorddisAPS
-FROM dbo.dinmippf
+FROM dbo.dinmippf mip
+     left join (SELECT a.*
+            FROM tmp.mbref a
+            LEFT OUTER JOIN tmp.mbref b ON a.reference = b.reference AND a.refseqnbr < b.refseqnbr
+            WHERE a.reftype='NDREF' and 
+			      b.reference IS NULL) ref on RIGHT('0000000000'+CAST(mip.workkey AS VARCHAR(9)),9) = ref.reference
+ 
 
 
 -----------------------
@@ -85,13 +91,11 @@ INTO datamarts.dNorddisProcess
 FROM dbo.fdisvg
 
 
-CREATE CLUSTERED INDEX [CI-workkey] ON [datamarts].[fNorddisAPS]
-([workkey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+CREATE CLUSTERED COLUMNSTORE INDEX ccs_Index ON datamarts.fNorddisAPS
 
 CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dNorddisDistribution]
 ([DistKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
 CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dNorddisProcess]
 ([DistKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
-
-
