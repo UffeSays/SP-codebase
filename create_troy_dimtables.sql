@@ -82,7 +82,7 @@ SELECT CONVERT(int, s.distributionkey) AS DistKey,
 	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, '2200-01-01') AS DistEventOrderDate
 INTO datamarts.dDistribution
 FROM (
-	SELECT distributionkey, description, distributiondate FROM vw_dstidn_all
+	SELECT distributionkey, description, distributiondate FROM vw_dstidn_all WHERE distributiondate IS NOT NULL
 	UNION ALL
 	SELECT 1000000 + anatnr AS distributionkey, 'NCB - ' + anatxt AS description, chgdte AS distributiondate FROM dinatnpf WHERE anjbss = '+' AND anjbst IN ('11', '08')
 ) s
