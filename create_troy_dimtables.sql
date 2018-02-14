@@ -72,24 +72,33 @@ DROP TABLE datamarts.dResStatus
 
 -----------------------
 -- dDistribution
-SELECT CONVERT(int, s.distributionkey) AS DistKey,
-       description AS DistDesc, 
-       description + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescAndKey, 
-       description + ' -- ' + COALESCE(CONVERT(varchar, CONVERT(date, s.distributiondate)), '<Saknar datum>') + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
-       CONVERT(date, distributiondate) AS DistDate,
-	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, -1) AS DistEventKey,
-	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventDesc ELSE de.DistEventDesc END, 'Ej kopplade avräkningar') AS DistEventDesc,
-	   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, '2200-01-01') AS DistEventOrderDate
+SELECT *,
+	CASE 
+		WHEN LEFT(DistEventDesc, 9) = 'Avräkning' AND distdate < DATEFROMPARTS(YEAR(DistEventOrderDate), (DATEPART(QUARTER, DistEventOrderDate)-1)*3 + 1, DAY(DistEventOrderDate)) 
+			THEN DATEFROMPARTS(YEAR(DistEventOrderDate), (DATEPART(QUARTER, DistEventOrderDate)-1)*3 + 1, DAY(DistEventOrderDate))
+		ELSE distdate
+	END AS DistDateEventAligned 
 INTO datamarts.dDistribution
-FROM (
-	SELECT distributionkey, description, distributiondate FROM vw_dstidn_all WHERE distributiondate IS NOT NULL
-	UNION ALL
-	SELECT 1000000 + anatnr AS distributionkey, 'NCB - ' + anatxt AS description, chgdte AS distributiondate FROM dinatnpf WHERE anjbss = '+' AND anjbst IN ('11', '08')
+FROM
+(
+	SELECT CONVERT(int, s.distributionkey) AS DistKey,
+		   description AS DistDesc, 
+		   description + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescAndKey, 
+		   description + ' -- ' + COALESCE(CONVERT(varchar, CONVERT(date, s.distributiondate)), '<Saknar datum>') + ' (' + CONVERT(varchar, s.distributionkey) + ')' AS DistDescWithDateAndKey, 
+		   CONVERT(date, distributiondate) AS DistDate,
+		   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventKey ELSE de.DistEventKey END, -1) AS DistEventKey,
+		   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventDesc ELSE de.DistEventDesc END, 'Ej kopplade avräkningar') AS DistEventDesc,
+		   COALESCE(CASE WHEN s.distributionkey >= 1000000 THEN nde.DistEventOrderDate ELSE de.DistEventOrderDate END, '2200-01-01') AS DistEventOrderDate
+	FROM (
+		SELECT distributionkey, description, distributiondate FROM vw_dstidn_all WHERE distributiondate IS NOT NULL
+		UNION ALL
+		SELECT 1000000 + anatnr AS distributionkey, 'NCB - ' + anatxt AS description, chgdte AS distributiondate FROM dinatnpf WHERE anjbss = '+' AND anjbst IN ('11', '08')
+	) s
+	LEFT JOIN udd_distribution_to_distributionevent dd ON s.distributionkey = dd.distributionkey
+	LEFT JOIN udd_distributionNcb_to_distributionevent ndd ON (s.distributionkey % 100000 ) = ndd.distatnr
+	LEFT JOIN udd_distributionevents de ON dd.DistEventKey = de.DistEventKey
+	LEFT JOIN udd_distributionevents nde ON ndd.DistEventKey = nde.DistEventKey
 ) s
-LEFT JOIN udd_distribution_to_distributionevent dd ON s.distributionkey = dd.distributionkey
-LEFT JOIN udd_distributionNcb_to_distributionevent ndd ON (s.distributionkey % 100000 ) = ndd.distatnr
-LEFT JOIN udd_distributionevents de ON dd.DistEventKey = de.DistEventKey
-LEFT JOIN udd_distributionevents nde ON ndd.DistEventKey = nde.DistEventKey
 
 CREATE CLUSTERED INDEX [CI-DistKey] ON [datamarts].[dDistribution]
 ([DistKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
