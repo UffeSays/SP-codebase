@@ -25,8 +25,8 @@ SELECT 	mip.distributionkey AS DistKey,
     	mip.reportkey AS ReportKey, 
     	mip.reportrowkey AS ReportRowKey,
     	ref.workkey AS IceWorkKey,
-    	mip.iceipbasekey AS IceIPBaseKey,
-    	mip.iceipnamekey AS IceIPNameKey,
+	mbi.ipbasekey as IceIPBaseKey,
+	mbi.ipnamekey as IceIPNameKey,
     	null AS CommissionTypeKey,
     	mip.societycode AS SocietyCode,
     	mip.usagereportsocietycode AS UsageReportSocietyCode,
@@ -56,11 +56,19 @@ SELECT 	mip.distributionkey AS DistKey,
 INTO datamarts.fNorddisAPS
 FROM dbo.dinmippf mip
      left join (SELECT a.*
-            FROM tmp.mbref a
-            LEFT OUTER JOIN tmp.mbref b ON a.reference = b.reference AND a.refseqnbr < b.refseqnbr
-            WHERE a.reftype='NDREF' and 
-			      b.reference IS NULL) ref on RIGHT('0000000000'+CAST(mip.workkey AS VARCHAR(9)),9) = ref.reference
- 
+                FROM tmp.mbref a
+                LEFT OUTER JOIN tmp.mbref b ON a.reference = b.reference AND a.refseqnbr < b.refseqnbr
+                WHERE a.reftype='NDREF' and 
+		      b.reference IS NULL) ref on RIGHT('0000000000'+CAST(mip.workkey AS VARCHAR(9)),9) = ref.reference
+     left join (select a.* 
+                from dbo.fdisve a
+                LEFT OUTER JOIN dbo.fdisve b ON a.veikey = b.veikey AND a.vetkey < b.vetkey
+                WHERE b.veikey IS NULL) sve on mip.ipkey=sve.veikey 
+     left join (select * 
+		from datamarts.dMatchboxIPInfo 
+		where IPINAMENBR>0) MBI on sve.vecaen = mbi.IPINAMENBR
+
+
 
 
 -----------------------
