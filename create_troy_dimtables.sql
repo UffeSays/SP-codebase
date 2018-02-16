@@ -70,6 +70,11 @@ DROP TABLE datamarts.dResApprovedForDistribution
 IF OBJECT_ID('datamarts.dResStatus', 'U') IS NOT NULL
 DROP TABLE datamarts.dResStatus
 
+IF OBJECT_ID('datamarts.dMandate', 'U') IS NOT NULL
+DROP TABLE datamarts.dMandate
+
+
+
 -----------------------
 -- dDistribution
 SELECT *,
@@ -390,3 +395,15 @@ FROM udd_resstatus
 CREATE CLUSTERED INDEX [CI-ResStatusKey] ON [datamarts].[dResStatus]
 ([ResStatusKey] ASC) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
+
+-----------------------
+-- dMandate
+SELECT MandateId,
+       MandateName,
+       MandateRights,
+       TypeOfRule,
+       RulePrio,
+       AllWriters,
+       InclWriter
+into datamarts.dMandate
+FROM dbo.wpcmh
